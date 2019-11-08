@@ -26,7 +26,9 @@ app.use(
 app.use(csurf());
 
 app.use(function(req, res, next) {
+    res.locals.csrfToken = req.csrfToken();
     res.setHeader("x-frame-options", "DENY");
+    // res.locals.first = req.session.first;
     next();
 });
 
@@ -45,13 +47,11 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    console.log("req.body: ", req.body);
     let firstname = req.body.first;
     let lastname = req.body.last;
     let signature = req.body.signature;
     db.addSigner(firstname, lastname, signature)
-        .then(({ rows }) => {
-            console.log("rows:", rows);
+        .then(() => {
             res.redirect("/petition/signed");
         })
         .catch(err => {
@@ -60,10 +60,12 @@ app.post("/petition", (req, res) => {
 });
 
 app.get("/petition/signed", (req, res) => {
-    db.getSigners()
-        .then(() => {
+    db.getNumber()
+        .then(({ rows }) => {
+            const signerCount = rows[0].count;
             res.render("signed", {
-                layout: "main"
+                layout: "main",
+                signerCount
             });
         })
         .catch(err => {
@@ -73,37 +75,21 @@ app.get("/petition/signed", (req, res) => {
 });
 
 app.get("/petition/signers", (req, res) => {
-    db.getNumber()
-        .then()
+    db.getSigners()
+        .then(({ rows }) => {
+            const signerList = rows;
+            res.render("signers", {
+                layout: "main",
+                signerList
+            });
+        })
         .catch(err => {
             console.log(err);
         });
     //// TODO:fix this ;
-    res.render("signers", {
-        layout: "main"
-    });
 });
 
 app.listen(8080, () => console.log("Listening"));
-
-// app.post("/add-city", (req, res) => {
-//     db.addCity("Sarajevo", 700000)
-//     .then(() => {
-//         console.log("Success");
-//     })
-//     .catch(err => {
-//         console.log(err);
-//     });
-// });
-// app.get("/cities", (req, res) => {
-//     db.getCities()
-//     .then(({ rows }) => {
-//         console.log("rows: ", rows);
-//     })
-//     .catch(err => {
-//         console.log(err);
-//     });
-// });
 
 //rows is the only thing in the results object we care about
 //rows is ALWAYS an array

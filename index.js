@@ -3,7 +3,6 @@ const app = express();
 const db = require("./utils/db");
 const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
-// const session_secret
 const csurf = require("csurf");
 
 app.engine("handlebars", hb());
@@ -18,7 +17,7 @@ app.use(
 
 app.use(
     cookieSession({
-        secret: `I'm always angry.`,
+        secret: `SPICY food is the best`,
         maxAge: 1000 * 60 * 60 * 24 * 14
     })
 );
@@ -28,15 +27,11 @@ app.use(csurf());
 app.use(function(req, res, next) {
     res.locals.csrfToken = req.csrfToken();
     res.setHeader("x-frame-options", "DENY");
-    // res.locals.first = req.session.first;
+    res.locals.first = req.session.first;
     next();
 });
 
 app.get("/", (req, res) => {
-    console.log("req.session before: ", req.session);
-    req.session.habanero = "hello";
-    console.log("req.session after: ", req.session);
-
     res.redirect("/petition");
 });
 
@@ -50,8 +45,11 @@ app.post("/petition", (req, res) => {
     let firstname = req.body.first;
     let lastname = req.body.last;
     let signature = req.body.signature;
+
     db.addSigner(firstname, lastname, signature)
-        .then(() => {
+        .then(({ rows }) => {
+            req.session.signatureId = rows[0].id;
+            req.session.first = firstname;
             res.redirect("/petition/signed");
         })
         .catch(err => {
@@ -60,18 +58,21 @@ app.post("/petition", (req, res) => {
 });
 
 app.get("/petition/signed", (req, res) => {
-    db.getNumber()
-        .then(({ rows }) => {
-            const signerCount = rows[0].count;
-            res.render("signed", {
-                layout: "main",
-                signerCount
+    db.getSignature(req.session.signatureId).then(({ rows }) => {
+        let sig = rows[0].signature;
+        db.getNumber()
+            .then(({ rows }) => {
+                const signerCount = rows[0].count;
+                res.render("signed", {
+                    layout: "main",
+                    signerCount,
+                    sig
+                });
+            })
+            .catch(err => {
+                console.log(err);
             });
-        })
-        .catch(err => {
-            console.log(err);
-        });
-    // TODO: do this
+    });
 });
 
 app.get("/petition/signers", (req, res) => {
@@ -86,7 +87,6 @@ app.get("/petition/signers", (req, res) => {
         .catch(err => {
             console.log(err);
         });
-    //// TODO:fix this ;
 });
 
 app.listen(8080, () => console.log("Listening"));

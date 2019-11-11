@@ -4,6 +4,7 @@ const db = require("./utils/db");
 const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
+const { hash, compare } = require("./utils/bc");
 
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
@@ -32,29 +33,105 @@ app.use(function(req, res, next) {
 });
 
 app.get("/", (req, res) => {
-    res.redirect("/petition");
+    res.redirect("/register");
 });
 
 app.get("/petition", (req, res) => {
+    let userId = req.session.userId;
+    console.log("userId: ", userId);
     res.render("inputForm", {
         layout: "main"
     });
+    // db.hasSigned(userId)
+    //     .then(({ rows }) => {
+    //         console.log("rows[0]:", rows[0]);
+    //         if (rows[0] !== "undefined") {
+    //             res.redirect("/petition/signed");
+    //         } else {
+    //             //res.render inputform was here
+    //         }
+    //     })
+    // .catch(err => {
+    //     console.log(err);
+    // });
 });
 
 app.post("/petition", (req, res) => {
-    let firstname = req.body.first;
-    let lastname = req.body.last;
     let signature = req.body.signature;
-
-    db.addSigner(firstname, lastname, signature)
+    let userId = req.session.userId;
+    db.addSigner(userId, signature)
         .then(({ rows }) => {
-            req.session.signatureId = rows[0].id;
-            req.session.first = firstname;
-            res.redirect("/petition/signed");
+            if (req.body.signature !== "") {
+                req.session.signatureId = rows[0].id;
+                res.redirect("/petition/signed");
+            } else {
+                res.redirect("back");
+            }
         })
         .catch(err => {
             console.log(err);
         });
+});
+
+app.get("/register", (req, res) => {
+    res.render("registration", {
+        layout: "main"
+    });
+});
+
+app.post("/register", (req, res) => {
+    hash(req.body.password).then(hashedPass => {
+        const { first, last, email } = req.body;
+        db.addUser(first, last, email, hashedPass)
+            .then(({ rows }) => {
+                req.session.userId = rows[0].id;
+                res.redirect("/petition");
+            })
+            .catch(err => {
+                console.log("error: ", err);
+                res.redirect("back");
+            });
+    });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", {
+        layout: "main"
+    });
+});
+
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+    db.getPassword(email).then(({ rows }) => {
+        const hashPass = rows[0].password;
+        const userId = rows[0].id;
+        compare(password, hashPass)
+            .then(passCheck => {
+                if (passCheck) {
+                    req.session.userid = userId;
+                    db.hasSigned(userId)
+                        .then(({ rows }) => {
+                            if (rows[0] !== undefined) {
+                                console.log("rows[0].id: ", rows[0].id);
+                                console.log("redirecting to signed");
+                                req.session.signatureId = rows[0].id;
+                                res.redirect("/petition/signed");
+                            } else {
+                                res.redirect("/petition");
+                            }
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
+                } else {
+                    res.redirect("back");
+                    //// TODO: need an error message here
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    });
 });
 
 app.get("/petition/signed", (req, res) => {
@@ -63,6 +140,7 @@ app.get("/petition/signed", (req, res) => {
         db.getNumber()
             .then(({ rows }) => {
                 const signerCount = rows[0].count;
+                //// TODO: join tables to only get users that have signed
                 res.render("signed", {
                     layout: "main",
                     signerCount,

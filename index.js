@@ -66,7 +66,7 @@ app.get("/profile", (req, res) => {
 app.post("/profile", (req, res) => {
     let userId = req.session.userId;
     let { age, city, url } = req.body;
-    if (!url.startsWith("http://") || !url.startsWith("https://")) {
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
         url = `http://${url}`;
     }
     if (age != "" || city != "" || url != "") {

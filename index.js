@@ -65,7 +65,10 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
     let userId = req.session.userId;
-    const { age, city, url } = req.body;
+    let { age, city, url } = req.body;
+    if (!url.startsWith("http://") || !url.startsWith("https://")) {
+        url = `http://${url}`;
+    }
     if (age != "" || city != "" || url != "") {
         db.addProfile(age, city, url, userId)
             .then(() => {
@@ -81,8 +84,7 @@ app.post("/profile", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-    let userId = req.session.userId;
-    console.log("userId: ", userId);
+    // let userId = req.session.userId;
     res.render("inputForm", {
         layout: "main"
     });
@@ -123,7 +125,6 @@ app.post("/login", (req, res) => {
                         req.session.userid = userId;
                         db.hasSigned(email)
                             .then(({ rows }) => {
-                                console.log("rows: ", rows[0]);
                                 if (
                                     typeof rows[0] === "undefined" ||
                                     rows[0].signature == ""

@@ -9,8 +9,16 @@ module.exports.addSigner = function addSigner(userId, signature) {
 };
 
 exports.getSigners = function getSigners() {
-    return db.query("SELECT * FROM users");
-    //// TODO: need to join signers with users to get only list of names that have signed
+    return db.query(
+        "SELECT * FROM users JOIN signatures ON  users.id = signatures.user_id  LEFT OUTER JOIN user_profiles ON signatures.user_id = user_profiles.user_id"
+    );
+};
+
+exports.getCitySigners = function getCitySigners(city) {
+    return db.query(
+        "SELECT * FROM users LEFT OUTER JOIN user_profiles ON users.id = user_profiles.user_id WHERE LOWER(city) = LOWER($1)",
+        [city]
+    );
 };
 
 exports.getNumber = function getNumber() {
@@ -32,6 +40,16 @@ exports.getPassword = function getPassword(email) {
     return db.query("SELECT password, id FROM users WHERE email=$1", [email]);
 };
 
-exports.hasSigned = function hasSigned(user_id) {
-    return db.query("SELECT id FROM signatures WHERE user_id=$1", [user_id]);
+exports.hasSigned = function hasSigned(email) {
+    return db.query(
+        "SELECT signatures.id AS signature_id, signature, user_id FROM signatures JOIN users ON signatures.user_id = users.id WHERE email=$1",
+        [email]
+    );
+};
+
+exports.addProfile = function addProfile(age, city, url, user_id) {
+    return db.query(
+        "INSERT INTO user_profiles(age, city, url, user_id) VALUES ($1, $2, $3, $4)",
+        [age || null, city, url, user_id]
+    );
 };

@@ -36,43 +36,6 @@ app.get("/", (req, res) => {
     res.redirect("/register");
 });
 
-app.get("/petition", (req, res) => {
-    let userId = req.session.userId;
-    console.log("userId: ", userId);
-    res.render("inputForm", {
-        layout: "main"
-    });
-    // db.hasSigned(userId)
-    //     .then(({ rows }) => {
-    //         console.log("rows[0]:", rows[0]);
-    //         if (rows[0] !== "undefined") {
-    //             res.redirect("/petition/signed");
-    //         } else {
-    //             //res.render inputform was here
-    //         }
-    //     })
-    // .catch(err => {
-    //     console.log(err);
-    // });
-});
-
-app.post("/petition", (req, res) => {
-    let signature = req.body.signature;
-    let userId = req.session.userId;
-    db.addSigner(userId, signature)
-        .then(({ rows }) => {
-            if (req.body.signature !== "") {
-                req.session.signatureId = rows[0].id;
-                res.redirect("/petition/signed");
-            } else {
-                res.redirect("back");
-            }
-        })
-        .catch(err => {
-            console.log(err);
-        });
-});
-
 app.get("/register", (req, res) => {
     res.render("registration", {
         layout: "main"
@@ -85,13 +48,61 @@ app.post("/register", (req, res) => {
         db.addUser(first, last, email, hashedPass)
             .then(({ rows }) => {
                 req.session.userId = rows[0].id;
-                res.redirect("/petition");
+                res.redirect("/profile");
             })
             .catch(err => {
                 console.log("error: ", err);
                 res.redirect("back");
             });
     });
+});
+
+app.get("/profile", (req, res) => {
+    res.render("profile", {
+        layout: "main"
+    });
+});
+
+app.post("/profile", (req, res) => {
+    let userId = req.session.userId;
+    const { age, city, url } = req.body;
+    if (age != "" || city != "" || url != "") {
+        db.addProfile(age, city, url, userId)
+            .then(() => {
+                res.redirect("/petition");
+            })
+            .catch(err => {
+                console.log(err);
+                res.redirect("back");
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+app.get("/petition", (req, res) => {
+    let userId = req.session.userId;
+    console.log("userId: ", userId);
+    res.render("inputForm", {
+        layout: "main"
+    });
+});
+
+app.post("/petition", (req, res) => {
+    let signature = req.body.signature;
+    let userId = req.session.userId;
+    db.addSigner(userId, signature)
+        .then(({ rows }) => {
+            if (req.body.signature !== "") {
+                req.session.signatureId = rows[0].id;
+                res.redirect("/signed");
+            } else {
+                res.redirect("back");
+            }
+        })
+        .catch(err => {
+            console.log(err);
+        });
 });
 
 app.get("/login", (req, res) => {
@@ -102,45 +113,51 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
-    db.getPassword(email).then(({ rows }) => {
-        const hashPass = rows[0].password;
-        const userId = rows[0].id;
-        compare(password, hashPass)
-            .then(passCheck => {
-                if (passCheck) {
-                    req.session.userid = userId;
-                    db.hasSigned(userId)
-                        .then(({ rows }) => {
-                            if (rows[0] !== undefined) {
-                                console.log("rows[0].id: ", rows[0].id);
-                                console.log("redirecting to signed");
-                                req.session.signatureId = rows[0].id;
-                                res.redirect("/petition/signed");
-                            } else {
-                                res.redirect("/petition");
-                            }
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
-                } else {
-                    res.redirect("back");
-                    //// TODO: need an error message here
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    });
+    db.getPassword(email)
+        .then(({ rows }) => {
+            const hashPass = rows[0].password;
+            const userId = rows[0].id;
+            compare(password, hashPass)
+                .then(passCheck => {
+                    if (passCheck) {
+                        req.session.userid = userId;
+                        db.hasSigned(email)
+                            .then(({ rows }) => {
+                                console.log("rows: ", rows[0]);
+                                if (
+                                    typeof rows[0] === "undefined" ||
+                                    rows[0].signature == ""
+                                ) {
+                                    res.redirect("/petition");
+                                } else {
+                                    req.session.signatureId =
+                                        rows[0].signature_id;
+                                    res.redirect("/signed");
+                                }
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            });
+                    } else {
+                        res.redirect("back");
+                        //// TODO: need an error message here
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        })
+        .catch(err => {
+            console.log(err);
+        });
 });
 
-app.get("/petition/signed", (req, res) => {
+app.get("/signed", (req, res) => {
     db.getSignature(req.session.signatureId).then(({ rows }) => {
         let sig = rows[0].signature;
         db.getNumber()
             .then(({ rows }) => {
                 const signerCount = rows[0].count;
-                //// TODO: join tables to only get users that have signed
                 res.render("signed", {
                     layout: "main",
                     signerCount,
@@ -153,11 +170,28 @@ app.get("/petition/signed", (req, res) => {
     });
 });
 
-app.get("/petition/signers", (req, res) => {
+app.get("/signers", (req, res) => {
     db.getSigners()
         .then(({ rows }) => {
             const signerList = rows;
             res.render("signers", {
+                layout: "main",
+                signerList
+            });
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.get("/signers/:city", (req, res) => {
+    let city = req.params.city;
+    console.log("city: ", city);
+    db.getCitySigners(city)
+        .then(({ rows }) => {
+            const signerList = rows;
+            res.render("signers", {
+                //// TODO: add a different template for city list instead of signers list
                 layout: "main",
                 signerList
             });

@@ -233,7 +233,7 @@ app.get("/edit", (req, res) => {
         });
 });
 
-app.listen(8080, () => console.log("Listening"));
+app.listen(process.env.PORT || 8080, () => console.log("Listening"));
 
 //rows is the only thing in the results object we care about
 //rows is ALWAYS an array

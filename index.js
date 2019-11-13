@@ -93,6 +93,7 @@ app.get("/petition", (req, res) => {
 app.post("/petition", (req, res) => {
     let signature = req.body.signature;
     let userId = req.session.userId;
+    console.log("userId:", userId);
     db.addSigner(userId, signature)
         .then(({ rows }) => {
             if (req.body.signature !== "") {
@@ -122,7 +123,7 @@ app.post("/login", (req, res) => {
             compare(password, hashPass)
                 .then(passCheck => {
                     if (passCheck) {
-                        req.session.userid = userId;
+                        req.session.userId = userId;
                         db.hasSigned(email)
                             .then(({ rows }) => {
                                 if (
@@ -130,9 +131,17 @@ app.post("/login", (req, res) => {
                                     rows[0].signature == ""
                                 ) {
                                     res.redirect("/petition");
+                                    console.log(
+                                        "req.session.userId: ",
+                                        req.session.userId
+                                    );
                                 } else {
                                     req.session.signatureId =
                                         rows[0].signature_id;
+                                    console.log(
+                                        "req.session.userId: ",
+                                        req.session.userId
+                                    );
                                     res.redirect("/signed");
                                 }
                             })
@@ -195,6 +204,28 @@ app.get("/signers/:city", (req, res) => {
                 //// TODO: add a different template for city list instead of signers list
                 layout: "main",
                 signerList
+            });
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.get("/edit", (req, res) => {
+    let userId = req.session.userId;
+    console.log("userId: ", userId);
+    db.getProfile(userId)
+        .then(({ rows }) => {
+            // console.log("rows[0]:", rows[0]);
+            let { first, last, email, age, city, url } = rows[0];
+            res.render("edit", {
+                layout: "main",
+                first,
+                last,
+                email,
+                age,
+                city,
+                url
             });
         })
         .catch(err => {

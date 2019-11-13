@@ -53,3 +53,10 @@ exports.addProfile = function addProfile(age, city, url, user_id) {
         [age || null, city, url, user_id]
     );
 };
+
+exports.getProfile = function editProfile(id) {
+    return db.query(
+        "SELECT users.id AS users_id, first, last, email, age, city, url FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE users.id=$1",
+        [id]
+    );
+};

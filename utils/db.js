@@ -89,3 +89,7 @@ exports.updateUserPass = function updateUserPass(
         [first, last, email, password, id]
     );
 };
+
+exports.deleteSig = function deleteSig(id) {
+    return db.query("DELETE FROM signatures WHERE id=$1", [id]);
+};

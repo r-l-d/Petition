@@ -318,6 +318,18 @@ app.post("/edit", (req, res) => {
     }
 });
 
+app.post("/delete", (req, res) => {
+    console.log("delete button pushed");
+    db.deleteSig(req.session.signatureId)
+        .then(() => {
+            req.session.signatureId = null;
+            res.redirect("/petition");
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
 app.listen(process.env.PORT || 8080, () => console.log("Listening"));
 
 //rows is the only thing in the results object we care about

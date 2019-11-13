@@ -233,6 +233,91 @@ app.get("/edit", (req, res) => {
         });
 });
 
+app.post("/edit", (req, res) => {
+    let userId = req.session.userId;
+    const { first, last, email, age, city, url } = req.body;
+    if (req.body.password) {
+        // console.log("req.body.password:", req.body.password);
+        hash(req.body.password)
+            .then(hashedPass => {
+                console.log(first, last, email, hashedPass, userId);
+                db.updateUserPass(first, last, email, hashedPass, userId)
+                    .then(() => {
+                        db.upsertProfile(age, city, url, userId)
+                            .then(() => {
+                                db.hasSigned(email).then(({ rows }) => {
+                                    if (
+                                        typeof rows[0] === "undefined" ||
+                                        rows[0].signature == ""
+                                    ) {
+                                        res.redirect("/petition");
+                                        console.log(
+                                            "req.session.userId: ",
+                                            req.session.userId
+                                        );
+                                    } else {
+                                        req.session.signatureId =
+                                            rows[0].signature_id;
+                                        console.log(
+                                            "req.session.userId: ",
+                                            req.session.userId
+                                        );
+                                        res.redirect("/signed");
+                                    }
+                                });
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            });
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    } else {
+        db.updateUser(first, last, email, userId)
+            .then(() => {
+                console.log("url:", url);
+                db.upsertProfile(age, city, url, userId)
+                    .then(() => {
+                        db.hasSigned(email)
+                            .then(({ rows }) => {
+                                if (
+                                    typeof rows[0] === "undefined" ||
+                                    rows[0].signature == ""
+                                ) {
+                                    res.redirect("/petition");
+                                    console.log(
+                                        "req.session.userId: ",
+                                        req.session.userId
+                                    );
+                                } else {
+                                    req.session.signatureId =
+                                        rows[0].signature_id;
+                                    console.log(
+                                        "req.session.userId: ",
+                                        req.session.userId
+                                    );
+                                    res.redirect("/signed");
+                                }
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            });
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+});
+
 app.listen(process.env.PORT || 8080, () => console.log("Listening"));
 
 //rows is the only thing in the results object we care about

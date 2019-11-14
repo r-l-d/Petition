@@ -1,4 +1,4 @@
-<h2>Here is the list of signers</H2>
+<h2>Here are the signers {{#if city}} from {{city}} {{/if}}</H2>
 
 
     {{#signerList}}
@@ -11,4 +11,6 @@
     </p>
     {{/signerList}}
 
-    <a href="/">Home</a>
+    <a href="/signers">See all signers</a>
+    <a href="/signed">See your signature</a>
+    <a href="/logout">Log out</a>

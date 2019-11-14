@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+module.exports = app;
 const db = require("./utils/db");
 const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
@@ -165,12 +166,6 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
 });
 
 app.get("/signed", requireSignature, (req, res) => {
-    console.log(
-        "res.locals.first:",
-        res.locals.first,
-        "req.session.first:",
-        req.session.first
-    );
     db.getSignature(req.session.signatureId).then(({ rows }) => {
         let sig = rows[0].signature;
         db.getNumber()
@@ -320,4 +315,6 @@ app.get("/logout", (req, res) => {
     res.redirect("/login");
 });
 
-app.listen(process.env.PORT || 8080, () => console.log("Listening"));
+if (require.main == module) {
+    app.listen(process.env.PORT || 8080, () => console.log("Listening"));
+}

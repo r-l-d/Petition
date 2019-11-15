@@ -162,6 +162,10 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
         })
         .catch(err => {
             console.log(err);
+            res.render("login", {
+                layout: "main",
+                error: true
+            });
         });
 });
 

@@ -116,6 +116,10 @@ app.post("/petition", requireNoSignature, (req, res) => {
         })
         .catch(err => {
             console.log(err);
+            res.render("inputform", {
+                layout: "main",
+                error: true
+            });
         });
 });
 
@@ -239,12 +243,15 @@ app.get("/profile/edit", (req, res) => {
 
 app.post("/profile/edit", (req, res) => {
     let userId = req.session.userId;
-    const { first, last, email, age, city, url } = req.body;
+    let { first, last, email, age, city, url } = req.body;
     if (req.body.password) {
         hash(req.body.password)
             .then(hashedPass => {
                 db.updateUserPass(first, last, email, hashedPass, userId)
                     .then(() => {
+                        if (age == "") {
+                            age = null;
+                        }
                         db.upsertProfile(age, city, url, userId)
                             .then(() => {
                                 db.hasSigned(email).then(({ rows }) => {
@@ -274,6 +281,9 @@ app.post("/profile/edit", (req, res) => {
     } else {
         db.updateUser(first, last, email, userId)
             .then(() => {
+                if (age == "") {
+                    age = null;
+                }
                 db.upsertProfile(age, city, url, userId)
                     .then(() => {
                         db.hasSigned(email)

@@ -1,18 +1,20 @@
-<h2>Here are the signers {{#if city}} from {{city}} {{/if}}</H2>
-
+<h1>Your fellow signatories {{#if city}} from {{city}} {{/if}}</H1>
 
     {{#signerList}}
     <p>
         {{first}}
         {{last}}
         {{age}}
-        <a href="/signers/{{city}}">{{city}}</a>
-        <a href="{{url}}" target="_blank">{{url}}</a>
+        <a class="notButton" href="/signers/{{city}}">{{city}}</a>
+        <a class="notButton" href="{{url}}" target="_blank">{{url}}</a>
     </p>
     {{/signerList}}
-
 {{#if city}}
+<button class="submit">
     <a href="/signers">See all signers</a>
+</button>
 {{/if}}
+<button class="submit">
     <a href="/signed">See your signature</a>
-    <a href="/logout">Log out</a>
+</button>
+{{>logout}}

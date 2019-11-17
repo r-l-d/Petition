@@ -6,6 +6,8 @@
     var y = 0;
     let isSigning = false;
 
+    console.log("canvas is here");
+
     canvas.addEventListener("mousedown", e => {
         console.log("mousedown on canv");
         x = e.clientX - canvas.offsetLeft;
@@ -15,7 +17,7 @@
 
     canvas.addEventListener("mousemove", e => {
         if (isSigning === true) {
-            c.strokeStyle = "black";
+            c.strokeStyle = "white";
             c.lineWidth = 2;
             c.beginPath();
             c.moveTo(x, y);

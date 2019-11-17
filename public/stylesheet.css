@@ -1,29 +1,22 @@
-/* html {
-    background-image: linear-gradient(#22c1c3, #fdbb2d);
-    background-size: cover;
-    background-repeat: no-repeat;
-    height: 100vh;
-} */
 canvas {
-    border: 1px black dotted;
+    border: 1px gold solid;
 }
 
 #sunrise {
-    border: 1px solid black;
     position: fixed;
     right: 0;
     bottom: 0;
     min-width: 100%;
     min-height: 100%;
+    z-index: -1;
 }
 
-.content {
-    position: fixed;
-    bottom: 0;
-    /* background: rgba(0, 0, 0, 0.5); */
-    color: #f1f1f1;
+#content {
+    color: #f3cd05;
     width: 100%;
     padding: 20px;
+    z-index: 3;
+    text-shadow: black 0.1em 0.1em 0.2em;
 }
 
 h1,
@@ -36,11 +29,75 @@ h6 {
 }
 h1 {
     font-size: 80px;
-    margin: auto 10px;
+    margin: 0 0;
+}
+h2 {
+    font-size: 30px;
 }
 
 a,
 input,
 p {
     font-family: "Open Sans", sans-serif;
+}
+input {
+    background: rgba(0, 0, 0, 0.3);
+    color: #f3cd05;
+    font-size: 20px;
+    border-bottom: 2px solid #f3cd05;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    margin: 5px 5px;
+    box-shadow: 2px 2px 5px 0px rgba(87, 87, 87, 0.81);
+}
+
+::placeholder {
+    color: #f3cd05;
+    opacity: 0.5;
+}
+
+label {
+    font-family: "Open sans", sans-serif;
+}
+
+a:link {
+    color: #36688d;
+    padding: 10px 10px;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #36688d;
+    text-decoration: none;
+}
+
+.submit {
+    background: #f3cd05;
+    color: #36688d;
+    font-size: 18px;
+    border-radius: 10px;
+    border: 1px solid #36688d;
+    margin: 10px 5px;
+    text-decoration: none;
+    height: 27px;
+    box-shadow: 2px 2px 5px 0px rgba(87, 87, 87, 0.81);
+}
+
+#sig {
+    /* background: white; */
+    color: black;
+}
+
+#helptext {
+    position: relative;
+    top: -30px;
+}
+.notButton {
+    color: #f3cd05 !important;
+    text-decoration: underline !important;
+}
+#profileEdit {
+    display: flex;
+    flex-wrap: wrap;
 }

@@ -1,15 +1,19 @@
-<h2>YOU SHOULD SIGN THIS</H2>
 
+<h1>READY TO SIGN?</h1>
 
+<p>WE, the undersigned, appreciate daylight and hereby acknowledge that it is associated with improved mood, enhanced morale, less fatigue, and more fun. As such, we hereby petition the Sun to provide additional hours of daylight during the cold and dark months of winter.</p>
 <form method="post">
+<label for="canv">Sign here:</label><br>
 <canvas id="canv" width="200" height="50"></canvas>
 <input type='hidden' name="signature" id="sigInput" >
 <input type="hidden" name="_csrf" value="{{csrfToken}}">
-<button id="submit" type="submit">SUBMIT</button>
+<br>
+<button class="submit" type="submit">Submit</button>
 </form>
+{{#if error}}
+{{>error}}
+{{/if}}
 
-<a href="/profile/edit">Edit your profile</a>
-<a href="/logout">Log out</a>
-
-
+{{>editProfile}}
+{{>logout}}
 {{>signature}}

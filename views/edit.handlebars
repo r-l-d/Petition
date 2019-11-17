@@ -1,39 +1,40 @@
+
 <h2>Edit your profile:</h2>
 
-<form method="post">
+<form method="post" id="profileEdit">
 <div>
-    <label>First Name</label>
+    <label>First Name</label><br>
     <input type="text" name="first" value='{{first}}'>
 </div>
 <div>
-    <label>Last Name</label>
+    <label>Last Name</label><br>
     <input type="text" name="last" value='{{last}}'>
 </div>
 <div>
-    <label>Email</label>
+    <label>Email</label><br>
     <input type="email" name="email" value='{{email}}'>
 </div>
 <div>
-    <label>Age</label>
-    <input type='number' name="age" value='{{age}}'>
+    <label>Age</label><br>
+    <input type='number' name="age" value={{age}}>
 </div>
 <div>
-    <label>City</label>
+    <label>City</label><br>
     <input type="text" name="city" value='{{city}}'>
 </div>
 
 <div>
-    <label>Website</label>
+    <label>Website</label><br>
     <input type="url" name="url" value='{{url}}'>
 </div>
 <div>
-    <label>Password</label>
+    <label>Password</label><br>
     <input type="password" name="password">
 </div>
-
-<button id="update" type="submit">UPDATE</button>
+</div>
+<button class="submit" type="submit">Update</button>
 <input type="hidden" name="_csrf" value="{{csrfToken}}">
+</div>
 </form>
 
-
-<a href="/logout">Log out</a>
+{{>logout}}

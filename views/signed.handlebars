@@ -1,13 +1,14 @@
-<h2>Thanks for signing!</H2>
+<h1>Thanks for signing!</H1>
 
-<p>You're the best, we couldn't have done this without you</p>
+<p>You're amazing. You've just changed the course of history.</p>
 
 <div>
-    <img src="{{sig}}">
+    <img id="sig" src="{{sig}}">
 </div>
 
+<button class="submit">
 <a href="/signers">See all {{signerCount}} signers</a>
-<a href="/profile/edit">Edit your profile</a>
-<a href="/logout">Log out</a>
-
+</button>
+{{>editProfile}}
 {{>delete}}
+{{>logout}}

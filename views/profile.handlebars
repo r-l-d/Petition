@@ -1,11 +1,11 @@
-<h2>Tell me more</h2>
+<h1>Tell us more</h1>
+<p id="helptext">if you want<p>
 
 <form method="post">
 <input type="text" name="age" placeholder="Age">
 <input type="text" name="city" placeholder="City">
 <input type="url" name="url" placeholder="Website">
 <input type="hidden" name="_csrf" value="{{csrfToken}}">
-<button id="submit" type="submit">CONTINUE</button>
+<button class="submit" type="submit">Continue</button>
 </form>
-
-<a href="/logout">Log out</a>
+{{>logout}}

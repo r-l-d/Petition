@@ -52,18 +52,22 @@ app.get("/register", requireLoggedOutUser, (req, res) => {
 });
 
 app.post("/register", requireLoggedOutUser, (req, res) => {
-    hash(req.body.password).then(hashedPass => {
-        const { first, last, email } = req.body;
-        db.addUser(first, last, email, hashedPass)
-            .then(({ rows }) => {
-                req.session.userId = rows[0].id;
-                res.redirect("/profile");
-            })
-            .catch(err => {
-                console.log("error: ", err);
-                res.redirect("back");
-            });
-    });
+    hash(req.body.password)
+        .then(hashedPass => {
+            const { first, last, email } = req.body;
+            db.addUser(first, last, email, hashedPass)
+                .then(({ rows }) => {
+                    req.session.userId = rows[0].id;
+                    res.redirect("/profile");
+                })
+                .catch(err => {
+                    console.log("error: ", err);
+                    res.redirect("back");
+                });
+        })
+        .catch(err => {
+            console.log(err);
+        });
 });
 
 app.get("/profile", (req, res) => {
@@ -157,7 +161,6 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
                             });
                     } else {
                         res.redirect("back");
-                        //// TODO: need an error message here
                     }
                 })
                 .catch(err => {
@@ -174,21 +177,25 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
 });
 
 app.get("/signed", requireSignature, (req, res) => {
-    db.getSignature(req.session.signatureId).then(({ rows }) => {
-        let sig = rows[0].signature;
-        db.getNumber()
-            .then(({ rows }) => {
-                const signerCount = rows[0].count;
-                res.render("signed", {
-                    layout: "main",
-                    signerCount,
-                    sig
+    db.getSignature(req.session.signatureId)
+        .then(({ rows }) => {
+            let sig = rows[0].signature;
+            db.getNumber()
+                .then(({ rows }) => {
+                    const signerCount = rows[0].count;
+                    res.render("signed", {
+                        layout: "main",
+                        signerCount,
+                        sig
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
                 });
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    });
+        })
+        .catch(err => {
+            console.log(err);
+        });
 });
 
 app.get("/signers", requireSignature, (req, res) => {
@@ -254,18 +261,22 @@ app.post("/profile/edit", (req, res) => {
                         }
                         db.upsertProfile(age, city, url, userId)
                             .then(() => {
-                                db.hasSigned(email).then(({ rows }) => {
-                                    if (
-                                        typeof rows[0] === "undefined" ||
-                                        rows[0].signature == ""
-                                    ) {
-                                        res.redirect("/petition");
-                                    } else {
-                                        req.session.signatureId =
-                                            rows[0].signature_id;
-                                        res.redirect("/signed");
-                                    }
-                                });
+                                db.hasSigned(email)
+                                    .then(({ rows }) => {
+                                        if (
+                                            typeof rows[0] === "undefined" ||
+                                            rows[0].signature == ""
+                                        ) {
+                                            res.redirect("/petition");
+                                        } else {
+                                            req.session.signatureId =
+                                                rows[0].signature_id;
+                                            res.redirect("/signed");
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.log(err);
+                                    });
                             })
                             .catch(err => {
                                 console.log(err);

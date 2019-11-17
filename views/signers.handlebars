@@ -2,11 +2,10 @@
 
     {{#signerList}}
     <p>
-        {{first}}
+        <a class="notButton" href="{{url}}" target="_blank">{{first}}</a>
         {{last}}
         {{age}}
         <a class="notButton" href="/signers/{{city}}">{{city}}</a>
-        <a class="notButton" href="{{url}}" target="_blank">{{url}}</a>
     </p>
     {{/signerList}}
 {{#if city}}

@@ -87,6 +87,7 @@ app.post("/profile", (req, res) => {
         url = `http://${url}`;
     }
     if (age != "" || city != "" || url != "") {
+        console.log("url:", url);
         db.addProfile(age, city, url, userId)
             .then(() => {
                 res.redirect("/petition");
